@@ -1,12 +1,7 @@
 import { Sources } from '@prisma/client'
-import {
-    GetServerSideProps,
-    GetStaticProps,
-    InferGetStaticPropsType,
-    NextPage,
-} from 'next'
+import { type GetServerSideProps, type NextPage } from 'next'
 import { useEffect, useState } from 'react'
-import { ListPageProps } from 'types'
+import { type ListPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 import * as XLSX from 'xlsx'
 import { useRouter } from 'next/router'
@@ -385,24 +380,28 @@ const Sources: NextPage<ListPageProps> = ({ host, sources }) => {
                                                                 uploadSources ||
                                                                     []
                                                             )
-                                                            if (result.success) {
-                                                                setShowUploadModal(false)
-                                                                toast.success(
-                                                                    'Success to add data!'
-                                                                )
-                                                            }
-                                                            if (!result.success) {
-                                                                setShowUploadModal(false)
-                                                                console.log(
-                                                                    result.error
-                                                                )
-                                                                toast.error(
-                                                                    'Error add data'
-                                                                )
-                                                            }
-                                                            router.replace(
-                                                                router.asPath
+                                                        if (result.success) {
+                                                            setShowUploadModal(
+                                                                false
                                                             )
+                                                            toast.success(
+                                                                'Success to add data!'
+                                                            )
+                                                        }
+                                                        if (!result.success) {
+                                                            setShowUploadModal(
+                                                                false
+                                                            )
+                                                            console.log(
+                                                                result.error
+                                                            )
+                                                            toast.error(
+                                                                'Error add data'
+                                                            )
+                                                        }
+                                                        router.replace(
+                                                            router.asPath
+                                                        )
                                                     }}
                                                     className="w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                                 >

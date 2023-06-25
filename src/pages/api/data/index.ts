@@ -1,7 +1,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { ScrapeResult } from 'types'
+import { type NextApiRequest, type NextApiResponse } from 'next'
+import { type ScrapeResult } from 'types'
 import { prisma } from '~/server/db'
 
 const getData = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -10,8 +10,8 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
     let index = 0
     for (const value of urls) {
         console.log(value.url)
-        const { data } = await axios.get(value.url)
-        const $ = cheerio.load(data)
+        const data = await axios.get(value.url)
+        const $ = cheerio.load(data.data)
 
         const dataLainnya = $('.Jasa_Lainnya')
         const dataNonKonstruksi = $(
@@ -59,12 +59,12 @@ export default async function handler(
     res: NextApiResponse
 ) {
     req.method === 'POST'
-        ? getData(req, res)
+        ? console.log('POST')
         : req.method === 'PUT'
         ? console.log('PUT')
         : req.method === 'DELETE'
         ? console.log('DELETE')
         : req.method === 'GET'
-        ? getData(req, res)
+        ? await getData(req, res)
         : res.status(404).send('')
 }

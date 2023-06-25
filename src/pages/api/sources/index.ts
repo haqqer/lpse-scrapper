@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next'
+import { type NextApiRequest, type NextApiResponse } from 'next'
 import { prisma } from '~/server/db'
 import { ZodError, z } from 'zod'
-import { Sources } from '@prisma/client'
+import { type Sources } from '@prisma/client'
 
 const getData = async (req: NextApiRequest, res: NextApiResponse) => {
     const sources = await prisma.sources.findMany()
@@ -14,7 +14,7 @@ const postData = async (req: NextApiRequest, res: NextApiResponse) => {
             url: z.string().url(),
         })
 
-        const sources: Sources[] = req.body?.data
+        const sources: Sources[] = req.body?.data 
         if (sources.length == 0) {
             res.status(400).json({ success: false, error: 'data cannot emtpy' })
             return
@@ -43,12 +43,12 @@ export default async function handler(
     res: NextApiResponse
 ) {
     req.method === 'POST'
-        ? postData(req, res)
+        ? await postData(req, res)
         : req.method === 'PUT'
         ? console.log('PUT')
         : req.method === 'DELETE'
         ? console.log('DELETE')
         : req.method === 'GET'
-        ? getData(req, res)
+        ? await getData(req, res)
         : res.status(404).send('')
 }

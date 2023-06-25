@@ -1,13 +1,13 @@
-import { val } from 'cheerio/lib/api/attributes'
+import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useState } from 'react'
-import { ScrapeResult } from 'types'
+import { type ScrapeResult, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 
-const Scrapper = () => {
+const Scrapper: NextPage<ScrapperPageProps> =  ({ host }) => {
     const [scrapeData, setScrapeData] = useState<ScrapeResult[]>()
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/data/')
+        fetch(`${host}/api/data/`)
             .then((res) => res.json())
             .then((value) => {
                 const data: ScrapeResult[] = value?.result
@@ -71,5 +71,18 @@ const Scrapper = () => {
         </DashboardLayout>
     )
 }
+
+export const getServerSideProps: GetServerSideProps<
+    ScrapperPageProps
+> = async () => {
+    const host = process.env.NEXTAUTH_URL
+    return {
+        props: {
+            host: host || '',
+            scrapeData: []
+        },
+    }
+}
+
 
 export default Scrapper

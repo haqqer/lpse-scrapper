@@ -1,9 +1,7 @@
 import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { PropsWithChildren } from 'react'
+import { type PropsWithChildren } from 'react'
 
-const DashboardLayout = ({ children }: PropsWithChildren<{}>) => {
-    const router = useRouter()
+const DashboardLayout = ({ children }: PropsWithChildren) => {
     return (
         <>
             <div className="bg-gray-50 antialiased dark:bg-gray-900">
