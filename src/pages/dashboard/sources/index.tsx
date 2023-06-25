@@ -325,52 +325,54 @@ const Sources: NextPage<ListPageProps> = ({ host, sources }) => {
                                                 />
                                             </div>
                                             <div>
-                                                <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                                                    <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                                        <tr>
-                                                            <th
-                                                                scope="col"
-                                                                className="px-6 py-3"
-                                                            >
-                                                                Instansi
-                                                            </th>
-                                                            <th
-                                                                scope="col"
-                                                                className="px-6 py-3"
-                                                            >
-                                                                URL
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {uploadSources !=
-                                                            undefined &&
-                                                            uploadSources.map(
-                                                                (
-                                                                    value,
-                                                                    idx
-                                                                ) => (
-                                                                    <tr
-                                                                        key={
-                                                                            idx
-                                                                        }
-                                                                        className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
-                                                                    >
-                                                                        <td className="px-6 py-4">
-                                                                            {
-                                                                                value.from
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                                                        <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                                            <tr>
+                                                                <th
+                                                                    scope="col"
+                                                                    className="px-6 py-3"
+                                                                >
+                                                                    Instansi
+                                                                </th>
+                                                                <th
+                                                                    scope="col"
+                                                                    className="px-6 py-3"
+                                                                >
+                                                                    URL
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {uploadSources !=
+                                                                undefined &&
+                                                                uploadSources.map(
+                                                                    (
+                                                                        value,
+                                                                        idx
+                                                                    ) => (
+                                                                        <tr
+                                                                            key={
+                                                                                idx
                                                                             }
-                                                                        </td>
-                                                                        <td className="px-6 py-4">
-                                                                            {
-                                                                                value.url
-                                                                            }
-                                                                        </td>
-                                                                    </tr>
-                                                                )
-                                                            )}
-                                                    </tbody>
-                                                </table>
+                                                                            className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                                                                        >
+                                                                            <td className="px-6 py-4">
+                                                                                {
+                                                                                    value.from
+                                                                                }
+                                                                            </td>
+                                                                            <td className="px-6 py-4">
+                                                                                {
+                                                                                    value.url
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                    )
+                                                                )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                             {buttonName == 'Upload' && (
                                                 <button
