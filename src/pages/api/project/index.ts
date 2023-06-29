@@ -1,13 +1,13 @@
 import axios, { type AxiosResponse } from 'axios'
 import * as cheerio from 'cheerio'
 import { type NextApiRequest, type NextApiResponse } from 'next'
-import { type LPSEProject } from 'types'
 import { prisma } from '~/server/db'
 import https from 'https'
 import http from 'http'
-import { AnyZodObject, Schema, z } from 'zod'
-import { NextResponse } from 'next/server'
-import { PrismaPromise, Project, ProjectPayload } from '@prisma/client'
+import { z } from 'zod'
+import { PrismaPromise } from '@prisma/client'
+
+import '~/utils/bigint'
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -43,6 +43,7 @@ const addBulkLPSEProject = async (
     const dataSchema = z.array(
         z.object({
             title: z.string(),
+            url: z.string(),
             owner: z.string(),
             hps: z.number(),
             type: z.string(),
@@ -56,31 +57,48 @@ const addBulkLPSEProject = async (
         lpseProjectList.forEach(async (lpseProject) => {
             const promise = prisma.project.findFirst({
                 where: {
-                    AND: [
-                        {
-                            title: {
-                                equals: lpseProject.title,
-                            },
-                            deadlineAt: {
-                                equals: lpseProject.deadlineAt,
-                            },
-                        },
-                    ],
+                    url: {
+                        equals: lpseProject.url,
+                    },
                 },
             })
             fetchPromises.push(promise)
         })
+        const addedIndexList: number[] = []
         const results = await Promise.allSettled(fetchPromises)
+        const writePromises: PrismaPromise<any>[] = []
         results
             .filter((result) => result.status == 'fulfilled')
-            .map((result) => {
-                if (result === null) {
+            .map((result, resultIndex) => {
+                const { value } =
+                    result as PromiseFulfilledResult<AxiosResponse>
+
+                // if data does not exist on database
+                if (value === null) {
+                    addedIndexList.push(resultIndex)
+                    const lpseProject = lpseProjectList[resultIndex]!
+                    const promise = prisma.project.create({
+                        data: {
+                            title: lpseProject.title,
+                            url: lpseProject.title,
+                            owner: lpseProject.owner,
+                            hps: lpseProject.hps,
+                            type: lpseProject.type,
+                            deadlineAt: lpseProject.deadlineAt,
+                        },
+                    })
+                    writePromises.push(promise)
                 }
             })
-        // res.status(200).json({
-        //     error: false,
-        //     data: projectList,
-        // })
+        const writeResults = Promise.allSettled(writePromises)
+        console.log(writeResults)
+        res.status(200).json({
+            error: false,
+            data: lpseProjectList.filter((_, index) =>
+                addedIndexList.includes(index)
+            ),
+            message: 'Data Successfully Added',
+        })
     } catch (err) {
         if (err instanceof z.ZodError) {
             res.status(400).json({

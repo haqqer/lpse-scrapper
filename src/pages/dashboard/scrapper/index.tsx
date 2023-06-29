@@ -28,7 +28,10 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       .then((res) => res.json())
       .then((value) => {
         const data: LPSEProject[] = value?.result
-        console.log(data)
+        axios
+          .post(`${host}/api/project`, data)
+          .then((res) => {})
+          .catch((err) => console.error(err))
       })
       .catch((err) => console.error(err))
       .finally(() => setFetchLPSELoading(false))
@@ -67,7 +70,6 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       .then((res: AxiosResponse) => {
         if (!res.data.error) {
           const data: Project[] = res.data.data
-          console.log(data)
           const list = data.map<ProjectItemView>(
             ({ owner, title, type, hps, deadlineAt }) => ({
               owner,

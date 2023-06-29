@@ -5,6 +5,7 @@ import { type LPSEProject } from 'types'
 import { prisma } from '~/server/db'
 import https from 'https'
 import http from 'http'
+import dayjs from 'dayjs'
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -41,28 +42,40 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                 dataLainnya.each((idx, el) => {
                     index = index + 1
                     const title = $(el).children('td').find('a').text()
+                    const domain = new URL(urls[resIndex]?.url ?? '').hostname
+                    const url = `https://${domain}${$(el)
+                        .children('td')
+                        .find('a')
+                        .attr('href')}`
                     const hps = $(el).find('td.table-hps').text()
                     const lastDate = $(el).find('td.center').text()
                     const data: LPSEProject = {
                         owner: urls[resIndex]?.from || '',
                         type: 'Jasa Lainnya',
-                        hps: hps,
-                        deadlineDate: lastDate,
+                        hps: Number(hps.replace(/[^0-9]+/g, '')),
+                        deadlineAt: dayjs(lastDate).toISOString(),
                         title: title,
+                        url,
                     }
                     result.push(data)
                 })
                 dataNonKonstruksi.each((idx, el) => {
                     index = index + 1
                     const title = $(el).children('td').find('a').text()
+                    const domain = new URL(urls[resIndex]?.url ?? '').hostname
+                    const url = `https://${domain}${$(el)
+                        .children('td')
+                        .find('a')
+                        .attr('href')}`
                     const hps = $(el).find('td.table-hps').text()
                     const lastDate = $(el).find('td.center').text()
                     const data: LPSEProject = {
                         owner: urls[resIndex]?.from || '',
                         type: 'Jasa Konsultasi Badan Usaha non Konstruksi',
-                        hps: hps,
-                        deadlineDate: lastDate,
+                        hps: Number(hps.replace(/[^0-9]+/g, '')),
+                        deadlineAt: dayjs(lastDate).toISOString(),
                         title: title,
+                        url,
                     }
                     result.push(data)
                 })

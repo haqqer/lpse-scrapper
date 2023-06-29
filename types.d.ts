@@ -4,9 +4,10 @@ import { NextApiRequest } from 'next'
 export type LPSEProject = {
     title: string
     type: string
-    hps: string
+    hps: number
     owner: string
-    deadlineDate: string
+    deadlineAt: string
+    url: string
 }
 
 export type ListPageProps = {
