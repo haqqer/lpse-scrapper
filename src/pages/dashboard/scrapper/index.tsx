@@ -1,17 +1,8 @@
 import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useMemo, useState } from 'react'
-import { type ScrapeResult, type ScrapperPageProps } from 'types'
+import { type LPSEItem, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table';
-
-interface LPSEItem {
-    no: number;
-    from: string;
-    type: string;
-    hps: string;
-    lasDate: string;
-    title: string;
-};
 
 const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     const [scrapeData, setScrapeData] = useState<LPSEItem[]>([])
@@ -36,7 +27,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                 header: 'HPS',
             },
             {
-                accessorKey: 'lasDate',
+                accessorKey: 'lastDate',
                 header: 'Akhir Pendaftaran',
             },
         ],
@@ -48,7 +39,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         fetch(`${host}/api/data/`)
             .then((res) => res.json())
             .then((value) => {
-                const data: ScrapeResult[] = value?.result
+                const data: LPSEItem[] = value?.result
                 data.map(scrape => scrape as LPSEItem)
                 setScrapeData(data)
             })

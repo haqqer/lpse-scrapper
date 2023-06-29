@@ -1,7 +1,7 @@
 import axios, { type AxiosResponse } from 'axios'
 import * as cheerio from 'cheerio'
 import { type NextApiRequest, type NextApiResponse } from 'next'
-import { type ScrapeResult } from 'types'
+import { type LPSEItem } from 'types'
 import { prisma } from '~/server/db'
 import https from 'https'
 import http from 'http'
@@ -17,7 +17,7 @@ const httpAgent = new http.Agent({
 
 const getData = async (req: NextApiRequest, res: NextApiResponse) => {
     const urls = await prisma.sources.findMany()
-    const result: ScrapeResult[] = []
+    const result: LPSEItem[] = []
     const promises: Promise<AxiosResponse>[] = [];
     let index = 0
     for (const value of urls) {
@@ -43,12 +43,12 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                 const title = $(el).children('td').find('a').text()
                 const hps = $(el).find('td.table-hps').text()
                 const lastDate = $(el).find('td.center').text()
-                const data: ScrapeResult = {
+                const data: LPSEItem = {
                     no: index,
                     from: urls[resIndex]?.from || "",
                     type: 'Jasa Lainnya',
                     hps: hps,
-                    lasDate: lastDate,
+                    lastDate: lastDate,
                     title: title,
                 }
                 result.push(data)
@@ -58,12 +58,12 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                 const title = $(el).children('td').find('a').text()
                 const hps = $(el).find('td.table-hps').text()
                 const lastDate = $(el).find('td.center').text()
-                const data: ScrapeResult = {
+                const data: LPSEItem = {
                     no: index,
                     from: urls[resIndex]?.from || "",
                     type: 'Jasa Konsultasi Badan Usaha non Konstruksi',
                     hps: hps,
-                    lasDate: lastDate,
+                    lastDate: lastDate,
                     title: title,
                 }
                 result.push(data)
