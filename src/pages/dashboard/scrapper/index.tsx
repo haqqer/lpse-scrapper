@@ -15,6 +15,7 @@ interface LPSEItem {
 
 const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     const [scrapeData, setScrapeData] = useState<LPSEItem[]>([])
+    const [isLoading, setLoading] = useState(true)
 
     const columns = useMemo<MRT_ColumnDef<LPSEItem>[]>(
         () => [
@@ -43,15 +44,16 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     );
 
     useEffect(() => {
+        setLoading(true)
         fetch(`${host}/api/data/`)
             .then((res) => res.json())
             .then((value) => {
                 const data: ScrapeResult[] = value?.result
                 data.map(scrape => scrape as LPSEItem)
                 setScrapeData(data)
-                console.log(data)
             })
             .catch((err) => console.error(err))
+            .finally(() => setLoading(false))
     }, [])
     return (
         <DashboardLayout>
@@ -61,6 +63,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                     data={scrapeData}
                     enablePagination={false}
                     enableRowVirtualization
+                    state={{ isLoading }}
                 />
             </div>
         </DashboardLayout>
