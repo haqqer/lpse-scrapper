@@ -1,12 +1,12 @@
 import { Sources } from "@prisma/client"
 import { NextApiRequest } from "next"
 
-export type ScrapeResult = {
+export type LPSEItem = {
     no: number
     title: string
     type: string
     hps: string
-    lasDate: string
+    lastDate: string
     from: string
 }
 

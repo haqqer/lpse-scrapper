@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { type ScrapeResult } from 'types'
+import { type LPSEItem } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 
 const Dashboard = () => {
-    const [scrapeData, setScrapeData] = useState<ScrapeResult[]>()
+    const [scrapeData, setScrapeData] = useState<LPSEItem[]>()
 
     useEffect(() => {
         // fetch('http://localhost:3000/api/data/')
