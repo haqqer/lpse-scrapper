@@ -7,6 +7,7 @@ import https from 'https'
 import http from 'http'
 import { AnyZodObject, Schema, z } from 'zod'
 import { NextResponse } from 'next/server'
+import { PrismaPromise, Project, ProjectPayload } from '@prisma/client'
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -35,24 +36,51 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 }
 
-const dataSchema = z.object({
-    title: z.string(),
-    owner: z.string(),
-    hps: z.number(),
-    type: z.string(),
-    deadlineAt: z.coerce.date(),
-})
+const addBulkLPSEProject = async (
+    req: NextApiRequest,
+    res: NextApiResponse
+) => {
+    const dataSchema = z.array(
+        z.object({
+            title: z.string(),
+            owner: z.string(),
+            hps: z.number(),
+            type: z.string(),
+            deadlineAt: z.coerce.date(),
+        })
+    )
 
-const addProject = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const data = await dataSchema.parse(req.body)
-        const projectList = await prisma.project.create({
-            data,
+        const lpseProjectList = await dataSchema.parse(req.body)
+        const fetchPromises: PrismaPromise<any>[] = []
+        lpseProjectList.forEach(async (lpseProject) => {
+            const promise = prisma.project.findFirst({
+                where: {
+                    AND: [
+                        {
+                            title: {
+                                equals: lpseProject.title,
+                            },
+                            deadlineAt: {
+                                equals: lpseProject.deadlineAt,
+                            },
+                        },
+                    ],
+                },
+            })
+            fetchPromises.push(promise)
         })
-        res.status(200).json({
-            error: false,
-            data: projectList,
-        })
+        const results = await Promise.allSettled(fetchPromises)
+        results
+            .filter((result) => result.status == 'fulfilled')
+            .map((result) => {
+                if (result === null) {
+                }
+            })
+        // res.status(200).json({
+        //     error: false,
+        //     data: projectList,
+        // })
     } catch (err) {
         if (err instanceof z.ZodError) {
             res.status(400).json({
@@ -80,7 +108,7 @@ export default async function handler(
                 await getProjectList(req, res)
                 break
             case 'POST':
-                await addProject(req, res)
+                await addBulkLPSEProject(req, res)
                 break
         }
     } catch (err) {}

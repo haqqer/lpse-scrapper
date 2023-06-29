@@ -71,6 +71,8 @@ model Project {
     deadlineAt DateTime
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
+
+    @@index([title, deadlineAt])
 }
 
 model Sources {
