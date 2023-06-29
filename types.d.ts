@@ -18,7 +18,3 @@ export type ScrapperPageProps = {
     host: string
     scrapeData: ScrapeResult[]
 }
-
-interface ScrapperPageApiRequest extends NextApiRequest {
-    data: Sources[];
-  }
