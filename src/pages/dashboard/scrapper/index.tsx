@@ -46,6 +46,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             .catch((err) => console.error(err))
             .finally(() => setLoading(false))
     }, [])
+
     return (
         <DashboardLayout>
             <div className="relative overflow-x-auto overflow-y-auto">

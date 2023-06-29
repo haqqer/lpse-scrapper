@@ -14,7 +14,7 @@ const postData = async (req: NextApiRequest, res: NextApiResponse) => {
             url: z.string().url(),
         })
 
-        const sources: Sources[] = req.body?.data 
+        const sources: Sources[] = req.body?.data
         if (sources.length == 0) {
             res.status(400).json({ success: false, error: 'data cannot emtpy' })
             return
