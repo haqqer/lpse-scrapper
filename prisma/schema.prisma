@@ -66,6 +66,7 @@ model Project {
     id         String   @id @default(cuid())
     owner      String
     title      String
+    type       String
     hps        Int
     deadlineAt DateTime
     createdAt  DateTime @default(now())

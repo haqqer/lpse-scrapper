@@ -1,17 +1,42 @@
 import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useMemo, useState } from 'react'
-import { type LPSEItem, type ScrapperPageProps } from 'types'
+import { type LPSEProject, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
-import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table';
+import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table'
+import axios, { AxiosResponse } from 'axios'
+import { Project, ProjectPayload } from '@prisma/client'
+import dayjs from 'dayjs'
+import { LoadingButton } from '@mui/lab'
+import { Refresh } from '@mui/icons-material'
+
+type ProjectItemView = {
+    owner: string
+    title: string
+    type: string
+    hps: string
+    deadlineAt: string
+}
 
 const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
-    const [scrapeData, setScrapeData] = useState<LPSEItem[]>([])
+    const [projectList, setProjectList] = useState<ProjectItemView[]>([])
     const [isLoading, setLoading] = useState(true)
+    const [isFetchLPSELoading, setFetchLPSELoading] = useState(false)
 
-    const columns = useMemo<MRT_ColumnDef<LPSEItem>[]>(
+    const fetchLPSEProject = () => {
+        setFetchLPSELoading(true)
+        fetch(`${host}/api/data/`)
+            .then((res) => res.json())
+            .then((value) => {
+                const data: LPSEProject[] = value?.result
+            })
+            .catch((err) => console.error(err))
+            .finally(() => setFetchLPSELoading(false))
+    }
+
+    const columns = useMemo<MRT_ColumnDef<ProjectItemView>[]>(
         () => [
             {
-                accessorKey: 'from',
+                accessorKey: 'owner',
                 header: 'Kementrian',
             },
             {
@@ -27,21 +52,34 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                 header: 'HPS',
             },
             {
-                accessorKey: 'lastDate',
+                accessorKey: 'deadlineAt',
                 header: 'Akhir Pendaftaran',
             },
         ],
-        [],
-    );
+        []
+    )
 
     useEffect(() => {
         setLoading(true)
-        fetch(`${host}/api/data/`)
-            .then((res) => res.json())
-            .then((value) => {
-                const data: LPSEItem[] = value?.result
-                data.map(scrape => scrape as LPSEItem)
-                setScrapeData(data)
+        axios
+            .get(`${host}/api/project`)
+            .then((res: AxiosResponse) => {
+                if (!res.data.error) {
+                    const data: Project[] = res.data.data
+                    console.log(data)
+                    const list = data.map<ProjectItemView>(
+                        ({ owner, title, type, hps, deadlineAt }) => ({
+                            owner,
+                            title,
+                            type,
+                            hps: `Rp ${hps.toLocaleString('id-ID')}`,
+                            deadlineAt:
+                                dayjs(deadlineAt).format('DD MMMM YYYY'),
+                        })
+                    )
+                    console.log(list)
+                    setProjectList(list)
+                }
             })
             .catch((err) => console.error(err))
             .finally(() => setLoading(false))
@@ -49,10 +87,21 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
 
     return (
         <DashboardLayout>
+            <div>
+                <LoadingButton
+                    loading={isFetchLPSELoading}
+                    variant="outlined"
+                    onClick={fetchLPSEProject}
+                    loadingPosition="start"
+                    startIcon={<Refresh />}
+                >
+                    Fetch LPSE Project
+                </LoadingButton>
+            </div>
             <div className="relative overflow-x-auto overflow-y-auto">
                 <MaterialReactTable
                     columns={columns}
-                    data={scrapeData}
+                    data={projectList}
                     enablePagination={false}
                     enableRowVirtualization
                     state={{ isLoading }}
@@ -69,10 +118,9 @@ export const getServerSideProps: GetServerSideProps<
     return {
         props: {
             host: host || '',
-            scrapeData: []
+            scrapeData: [],
         },
     }
 }
-
 
 export default Scrapper

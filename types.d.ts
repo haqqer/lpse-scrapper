@@ -1,13 +1,12 @@
-import { Sources } from "@prisma/client"
-import { NextApiRequest } from "next"
+import { Sources } from '@prisma/client'
+import { NextApiRequest } from 'next'
 
-export type LPSEItem = {
-    no: number
+export type LPSEProject = {
     title: string
     type: string
     hps: string
-    lastDate: string
-    from: string
+    owner: string
+    deadlineDate: string
 }
 
 export type ListPageProps = {
