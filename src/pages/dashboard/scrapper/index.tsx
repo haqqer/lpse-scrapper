@@ -1,7 +1,7 @@
 import { Refresh } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
 import { Box, Link } from '@mui/material'
-import { Project, ProjectPayload } from '@prisma/client'
+import { Project, ProjectPayload, Sources } from '@prisma/client'
 import axios, { AxiosResponse } from 'axios'
 import dayjs from 'dayjs'
 import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table'
@@ -11,13 +11,13 @@ import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 
-type ProjectTitleView = {
+type ProjectLinkView = {
   text: string
   url: string
 }
 type ProjectItemView = {
-  owner: string
-  title: ProjectTitleView
+  owner: ProjectLinkView
+  title: ProjectLinkView
   type: string
   hps: string
   deadlineAt: string
@@ -27,14 +27,21 @@ const columns: MRT_ColumnDef<ProjectItemView>[] = [
   {
     accessorKey: 'owner',
     header: 'Kementrian',
+    Cell: ({ cell }) => (
+      <Box>
+        <Link target="_blank" href={cell.getValue<ProjectLinkView>().url}>
+          {cell.getValue<ProjectLinkView>().text}
+        </Link>
+      </Box>
+    ),
   },
   {
     accessorKey: 'title',
     header: 'Judul',
     Cell: ({ cell }) => (
       <Box>
-        <Link target="_blank" href={cell.getValue<ProjectTitleView>().url}>
-          {cell.getValue<ProjectTitleView>().text}
+        <Link target="_blank" href={cell.getValue<ProjectLinkView>().url}>
+          {cell.getValue<ProjectLinkView>().text}
         </Link>
       </Box>
     ),
@@ -86,12 +93,19 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     setLoading(true)
     axios
       .get(`${host}/api/project`)
-      .then((res: AxiosResponse) => {
+      .then(async (res: AxiosResponse) => {
         if (!res.data.error) {
+          const sourcesResponse = await axios.get(`${host}/api/sources`)
+          const sources = sourcesResponse.data.result as Array<Sources>
+          console.log(sources)
+
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
             ({ owner, title, type, hps, deadlineAt, url }) => ({
-              owner,
+              owner: {
+                text: owner,
+                url: sources.filter((s) => s.from === owner)[0]!.url,
+              },
               title: {
                 text: title,
                 url,
@@ -101,6 +115,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
               deadlineAt: dayjs(deadlineAt).format('DD MMMM YYYY'),
             })
           )
+          console.log(list)
           setProjectList(list)
         }
       })

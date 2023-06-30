@@ -1,6 +1,7 @@
 import { PrismaPromise } from '@prisma/client'
 import axios, { type AxiosResponse } from 'axios'
 import * as cheerio from 'cheerio'
+import dayjs from 'dayjs'
 import http from 'http'
 import https from 'https'
 import { type NextApiRequest, type NextApiResponse } from 'next'
@@ -16,7 +17,18 @@ const httpAgent = new http.Agent({})
 
 const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-        const projectList = await prisma.project.findMany()
+        const projectList = await prisma.project.findMany({
+            orderBy: [
+                {
+                    deadlineAt: 'asc',
+                },
+            ],
+            where: {
+                deadlineAt: {
+                    gte: dayjs(Date.now()).startOf('day').toISOString(),
+                },
+            },
+        })
         res.status(200).json({
             error: false,
             data: projectList,
