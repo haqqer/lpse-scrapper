@@ -19,7 +19,6 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
     const promises: Promise<AxiosResponse>[] = []
     let index = 0
     for (const value of urls) {
-        console.log(value.url)
         const res = axios.get(value.url, {
             httpsAgent: httpsAgent,
             httpAgent: httpAgent,

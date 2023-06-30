@@ -11,60 +11,89 @@ import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 
-type ProjectLinkView = {
-  text: string
-  url: string
-}
 type ProjectItemView = {
-  owner: ProjectLinkView
-  title: ProjectLinkView
+  owner: string
+  ownerUrl: string
+  title: string
+  url: string
   type: string
-  hps: string
+  hps: number
   deadlineAt: string
 }
-
-const columns: MRT_ColumnDef<ProjectItemView>[] = [
-  {
-    accessorKey: 'owner',
-    header: 'Kementrian',
-    Cell: ({ cell }) => (
-      <Box>
-        <Link target="_blank" href={cell.getValue<ProjectLinkView>().url}>
-          {cell.getValue<ProjectLinkView>().text}
-        </Link>
-      </Box>
-    ),
-  },
-  {
-    accessorKey: 'title',
-    header: 'Judul',
-    Cell: ({ cell }) => (
-      <Box>
-        <Link target="_blank" href={cell.getValue<ProjectLinkView>().url}>
-          {cell.getValue<ProjectLinkView>().text}
-        </Link>
-      </Box>
-    ),
-  },
-  {
-    accessorKey: 'type',
-    header: 'Jenis',
-  },
-  {
-    accessorKey: 'hps',
-    header: 'HPS',
-  },
-  {
-    accessorKey: 'deadlineAt',
-    header: 'Akhir Pendaftaran',
-  },
-]
 
 const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [projectList, setProjectList] = useState<ProjectItemView[]>([])
   const [updatedIndexes, setUpdatedIndexes] = useState<string[]>([])
   const [isLoading, setLoading] = useState(true)
   const [isFetchLPSELoading, setFetchLPSELoading] = useState(false)
+
+  const columns = useMemo<MRT_ColumnDef<ProjectItemView>[]>(
+    () => [
+      {
+        accessorKey: 'owner',
+        header: 'Kementrian',
+        Cell: ({ cell }) => (
+          <Box>
+            <Link target="_blank" href={cell.row.getValue<string>('ownerUrl')}>
+              {cell.getValue<string>()}
+            </Link>
+          </Box>
+        ),
+        filterSelectOptions: [
+          ...new Set(
+            projectList
+              .map((project) => project.owner)
+              .sort((a, b) => a.localeCompare(b))
+          ),
+        ],
+        filterVariant: 'select',
+      },
+      {
+        accessorKey: 'title',
+        header: 'Judul',
+        Cell: ({ cell }) => (
+          <Box>
+            <Link target="_blank" href={cell.row.getValue<string>('url')}>
+              {cell.getValue<string>()}
+            </Link>
+          </Box>
+        ),
+      },
+      {
+        accessorKey: 'type',
+        header: 'Jenis',
+        filterSelectOptions: [
+          ...new Set(
+            projectList
+              .map((project) => project.type)
+              .sort((a, b) => a.localeCompare(b))
+          ),
+        ],
+        filterVariant: 'select',
+      },
+      {
+        accessorKey: 'hps',
+        header: 'HPS',
+        filterVariant: 'range',
+        Cell: ({ cell }) => (
+          <Box>{`Rp ${cell.getValue<number>().toLocaleString('id-ID')}`}</Box>
+        ),
+      },
+      {
+        accessorKey: 'deadlineAt',
+        header: 'Akhir Pendaftaran',
+      },
+      {
+        accessorKey: 'url',
+        header: 'URL',
+      },
+      {
+        accessorKey: 'ownerUrl',
+        header: 'Owner URL',
+      },
+    ],
+    [projectList]
+  )
 
   const fetchLPSEProject = () => {
     setFetchLPSELoading(true)
@@ -101,16 +130,12 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
             ({ owner, title, type, hps, deadlineAt, url }) => ({
-              owner: {
-                text: owner,
-                url: sources.filter((s) => s.from === owner)[0]!.url,
-              },
-              title: {
-                text: title,
-                url,
-              },
+              owner,
+              ownerUrl: sources.filter((s) => s.from === owner)[0]!.url,
+              title,
+              url,
               type,
-              hps: `Rp ${hps.toLocaleString('id-ID')}`,
+              hps: Number(hps),
               deadlineAt: dayjs(deadlineAt).format('DD MMMM YYYY'),
             })
           )
@@ -140,6 +165,12 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
           enablePagination={false}
           enableRowVirtualization
           state={{ isLoading }}
+          initialState={{
+            columnVisibility: {
+              url: false,
+              ownerUrl: false,
+            },
+          }}
         />
       </div>
     </DashboardLayout>

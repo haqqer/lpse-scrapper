@@ -64,51 +64,24 @@ const addBulkLPSEProject = async (
 
     try {
         const lpseProjectList = await dataSchema.parse(req.body)
-        const fetchPromises: PrismaPromise<any>[] = []
-        lpseProjectList.forEach(async (lpseProject) => {
-            const promise = prisma.project.findFirst({
-                where: {
-                    url: {
-                        equals: lpseProject.url,
-                    },
+        const projectList = await prisma.project.findMany({
+            where: {
+                url: {
+                    in: lpseProjectList.map((project) => project.url),
                 },
-            })
-            fetchPromises.push(promise)
+            },
         })
-        const addedIndexList: number[] = []
-        const results = await Promise.allSettled(fetchPromises)
-        const writePromises: PrismaPromise<any>[] = []
-        results
-            .filter((result) => result.status == 'fulfilled')
-            .map((result, resultIndex) => {
-                const { value } =
-                    result as PromiseFulfilledResult<AxiosResponse>
+        const existProjectIds = projectList.map((project) => project.url)
+        const notExistProjectList = lpseProjectList.filter(
+            (project) => !existProjectIds.includes(project.url)
+        )
 
-                // if data does not exist on database
-                if (value === null) {
-                    addedIndexList.push(resultIndex)
-                    const lpseProject = lpseProjectList[resultIndex]!
-                    const promise = prisma.project.create({
-                        data: {
-                            title: lpseProject.title,
-                            url: lpseProject.url,
-                            owner: lpseProject.owner,
-                            hps: lpseProject.hps,
-                            type: lpseProject.type,
-                            deadlineAt: lpseProject.deadlineAt,
-                        },
-                    })
-                    writePromises.push(promise)
-                }
-            })
-        const writeResults: PromiseSettledResult<AxiosResponse>[] =
-            await Promise.allSettled(writePromises)
-        const writeSuccessResults = writeResults.filter(
-            (res) => res.status === 'fulfilled'
-        ) as PromiseFulfilledResult<AxiosResponse>[]
+        const response = await prisma.project.createMany({
+            data: notExistProjectList,
+        })
         res.status(200).json({
             error: false,
-            data: writeSuccessResults,
+            data: notExistProjectList,
             message: 'Data Successfully Added',
         })
     } catch (err) {
