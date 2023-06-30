@@ -1,11 +1,11 @@
 import axios, { type AxiosResponse } from 'axios'
 import * as cheerio from 'cheerio'
+import dayjs from 'dayjs'
+import http from 'http'
+import https from 'https'
 import { type NextApiRequest, type NextApiResponse } from 'next'
 import { type LPSEProject } from 'types'
 import { prisma } from '~/server/db'
-import https from 'https'
-import http from 'http'
-import dayjs from 'dayjs'
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -52,7 +52,7 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                     const data: LPSEProject = {
                         owner: urls[resIndex]?.from || '',
                         type: 'Jasa Lainnya',
-                        hps: Number(hps.replace(/[^0-9]+/g, '')),
+                        hps: Number(hps.split(',')[0]!.replace(/[^0-9]+/g, '')),
                         deadlineAt: dayjs(lastDate).toISOString(),
                         title: title,
                         url,
@@ -72,7 +72,7 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                     const data: LPSEProject = {
                         owner: urls[resIndex]?.from || '',
                         type: 'Jasa Konsultasi Badan Usaha non Konstruksi',
-                        hps: Number(hps.replace(/[^0-9]+/g, '')),
+                        hps: Number(hps.split(',')[0]!.replace(/[^0-9]+/g, '')),
                         deadlineAt: dayjs(lastDate).toISOString(),
                         title: title,
                         url,

@@ -83,9 +83,9 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
               toast.success('No new project')
             }
           })
-          .catch((err) => console.error(err))
+          .catch((err) => toast.error(err))
       })
-      .catch((err) => console.error(err))
+      .catch((err) => toast.error(err))
       .finally(() => setFetchLPSELoading(false))
   }
 
@@ -97,7 +97,6 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         if (!res.data.error) {
           const sourcesResponse = await axios.get(`${host}/api/sources`)
           const sources = sourcesResponse.data.result as Array<Sources>
-          console.log(sources)
 
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
@@ -115,11 +114,10 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
               deadlineAt: dayjs(deadlineAt).format('DD MMMM YYYY'),
             })
           )
-          console.log(list)
           setProjectList(list)
         }
       })
-      .catch((err) => console.error(err))
+      .catch((err) => toast.error(err))
       .finally(() => setLoading(false))
   }, [updatedIndexes])
 
