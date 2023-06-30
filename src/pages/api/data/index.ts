@@ -27,10 +27,15 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     const results = await Promise.allSettled(promises)
     results
-        .filter((result) => result.status == 'fulfilled')
-        .map((res, resIndex) => {
+        .map((result, index) => ({
+            result,
+            source: urls[index],
+        }))
+        .filter((obj) => obj.result.status == 'fulfilled')
+        .map((obj) => {
             try {
-                const { value } = res as PromiseFulfilledResult<AxiosResponse>
+                const { value } =
+                    obj.result as PromiseFulfilledResult<AxiosResponse>
                 const $ = cheerio.load(value.data)
 
                 const dataLainnya = $('.Jasa_Lainnya')
@@ -41,7 +46,7 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                 dataLainnya.each((idx, el) => {
                     index = index + 1
                     const title = $(el).children('td').find('a').text()
-                    const domain = new URL(urls[resIndex]?.url ?? '').hostname
+                    const domain = new URL(obj.source!.url ?? '').hostname
                     const url = `https://${domain}${$(el)
                         .children('td')
                         .find('a')
@@ -49,7 +54,7 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                     const hps = $(el).find('td.table-hps').text()
                     const lastDate = $(el).find('td.center').text()
                     const data: LPSEProject = {
-                        owner: urls[resIndex]?.from || '',
+                        owner: obj.source!.from || '',
                         type: 'Jasa Lainnya',
                         hps: Number(hps.split(',')[0]!.replace(/[^0-9]+/g, '')),
                         deadlineAt: dayjs(lastDate).toISOString(),
@@ -61,7 +66,7 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                 dataNonKonstruksi.each((idx, el) => {
                     index = index + 1
                     const title = $(el).children('td').find('a').text()
-                    const domain = new URL(urls[resIndex]?.url ?? '').hostname
+                    const domain = new URL(obj.source!.url ?? '').hostname
                     const url = `https://${domain}${$(el)
                         .children('td')
                         .find('a')
@@ -69,7 +74,7 @@ const getData = async (req: NextApiRequest, res: NextApiResponse) => {
                     const hps = $(el).find('td.table-hps').text()
                     const lastDate = $(el).find('td.center').text()
                     const data: LPSEProject = {
-                        owner: urls[resIndex]?.from || '',
+                        owner: obj.source!.from || '',
                         type: 'Jasa Konsultasi Badan Usaha non Konstruksi',
                         hps: Number(hps.split(',')[0]!.replace(/[^0-9]+/g, '')),
                         deadlineAt: dayjs(lastDate).toISOString(),
