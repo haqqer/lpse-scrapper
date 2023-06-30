@@ -1,24 +1,61 @@
+import { Refresh } from '@mui/icons-material'
+import { LoadingButton } from '@mui/lab'
+import { Box, Link } from '@mui/material'
+import { Project, ProjectPayload } from '@prisma/client'
+import axios, { AxiosResponse } from 'axios'
+import dayjs from 'dayjs'
+import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table'
 import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
-import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table'
-import axios, { AxiosResponse } from 'axios'
-import { Project, ProjectPayload } from '@prisma/client'
-import dayjs from 'dayjs'
-import { LoadingButton } from '@mui/lab'
-import { Refresh } from '@mui/icons-material'
 
+type ProjectTitleView = {
+  text: string
+  url: string
+}
 type ProjectItemView = {
   owner: string
-  title: string
+  title: ProjectTitleView
   type: string
   hps: string
   deadlineAt: string
 }
 
+const columns: MRT_ColumnDef<ProjectItemView>[] = [
+  {
+    accessorKey: 'owner',
+    header: 'Kementrian',
+  },
+  {
+    accessorKey: 'title',
+    header: 'Judul',
+    Cell: ({ cell }) => (
+      <Box>
+        <Link target="_blank" href={cell.getValue<ProjectTitleView>().url}>
+          {cell.getValue<ProjectTitleView>().text}
+        </Link>
+      </Box>
+    ),
+  },
+  {
+    accessorKey: 'type',
+    header: 'Jenis',
+  },
+  {
+    accessorKey: 'hps',
+    header: 'HPS',
+  },
+  {
+    accessorKey: 'deadlineAt',
+    header: 'Akhir Pendaftaran',
+  },
+]
+
 const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [projectList, setProjectList] = useState<ProjectItemView[]>([])
+  const [updatedIndexes, setUpdatedIndexes] = useState<string[]>([])
   const [isLoading, setLoading] = useState(true)
   const [isFetchLPSELoading, setFetchLPSELoading] = useState(false)
 
@@ -30,38 +67,20 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         const data: LPSEProject[] = value?.result
         axios
           .post(`${host}/api/project`, data)
-          .then((res) => {})
+          .then((res) => {
+            const data: Project[] = res.data.data
+            setUpdatedIndexes(data.map((project) => project.id))
+            if (data.length > 0) {
+              toast.success(`${data.length} new project`)
+            } else {
+              toast.success('No new project')
+            }
+          })
           .catch((err) => console.error(err))
       })
       .catch((err) => console.error(err))
       .finally(() => setFetchLPSELoading(false))
   }
-
-  const columns = useMemo<MRT_ColumnDef<ProjectItemView>[]>(
-    () => [
-      {
-        accessorKey: 'owner',
-        header: 'Kementrian',
-      },
-      {
-        accessorKey: 'title',
-        header: 'Judul',
-      },
-      {
-        accessorKey: 'type',
-        header: 'Jenis',
-      },
-      {
-        accessorKey: 'hps',
-        header: 'HPS',
-      },
-      {
-        accessorKey: 'deadlineAt',
-        header: 'Akhir Pendaftaran',
-      },
-    ],
-    []
-  )
 
   useEffect(() => {
     setLoading(true)
@@ -71,21 +90,23 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         if (!res.data.error) {
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
-            ({ owner, title, type, hps, deadlineAt }) => ({
+            ({ owner, title, type, hps, deadlineAt, url }) => ({
               owner,
-              title,
+              title: {
+                text: title,
+                url,
+              },
               type,
               hps: `Rp ${hps.toLocaleString('id-ID')}`,
               deadlineAt: dayjs(deadlineAt).format('DD MMMM YYYY'),
             })
           )
-          console.log(list)
           setProjectList(list)
         }
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false))
-  }, [])
+  }, [updatedIndexes])
 
   return (
     <DashboardLayout>

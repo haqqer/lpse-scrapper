@@ -1,12 +1,11 @@
+import { PrismaPromise } from '@prisma/client'
 import axios, { type AxiosResponse } from 'axios'
 import * as cheerio from 'cheerio'
-import { type NextApiRequest, type NextApiResponse } from 'next'
-import { prisma } from '~/server/db'
-import https from 'https'
 import http from 'http'
+import https from 'https'
+import { type NextApiRequest, type NextApiResponse } from 'next'
 import { z } from 'zod'
-import { PrismaPromise } from '@prisma/client'
-
+import { prisma } from '~/server/db'
 import '~/utils/bigint'
 
 const httpsAgent = new https.Agent({
@@ -80,7 +79,7 @@ const addBulkLPSEProject = async (
                     const promise = prisma.project.create({
                         data: {
                             title: lpseProject.title,
-                            url: lpseProject.title,
+                            url: lpseProject.url,
                             owner: lpseProject.owner,
                             hps: lpseProject.hps,
                             type: lpseProject.type,
@@ -90,13 +89,14 @@ const addBulkLPSEProject = async (
                     writePromises.push(promise)
                 }
             })
-        const writeResults = Promise.allSettled(writePromises)
-        console.log(writeResults)
+        const writeResults: PromiseSettledResult<AxiosResponse>[] =
+            await Promise.allSettled(writePromises)
+        const writeSuccessResults = writeResults.filter(
+            (res) => res.status === 'fulfilled'
+        ) as PromiseFulfilledResult<AxiosResponse>[]
         res.status(200).json({
             error: false,
-            data: lpseProjectList.filter((_, index) =>
-                addedIndexList.includes(index)
-            ),
+            data: writeSuccessResults,
             message: 'Data Successfully Added',
         })
     } catch (err) {
