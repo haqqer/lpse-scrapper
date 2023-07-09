@@ -15,12 +15,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
@@ -66,9 +60,23 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+// Application models
+
+model Project {
+    id         String   @id @default(cuid())
+    url        String   @unique
+    owner      String
+    title      String
+    type       String
+    hps        BigInt
+    deadlineAt DateTime
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+}
+
 model Sources {
     id        String   @id @default(cuid())
-    from      String
+    from      String   @unique
     url       String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
