@@ -1,10 +1,10 @@
 import { Refresh } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
 import { Box, Link } from '@mui/material'
-import { Project, ProjectPayload, Sources } from '@prisma/client'
-import axios, { AxiosResponse } from 'axios'
+import { type Project, type Sources } from '@prisma/client'
+import axios, { type AxiosResponse } from 'axios'
 import dayjs from 'dayjs'
-import { MRT_ColumnDef, MaterialReactTable } from 'material-react-table'
+import { type MRT_ColumnDef, MaterialReactTable } from 'material-react-table'
 import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -26,6 +26,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [updatedIndexes, setUpdatedIndexes] = useState<string[]>([])
   const [isLoading, setLoading] = useState(true)
   const [isFetchLPSELoading, setFetchLPSELoading] = useState(false)
+  const [isHitScrapper, setHitScrapper] = useState(false)
 
   const columns = useMemo<MRT_ColumnDef<ProjectItemView>[]>(
     () => [
@@ -100,22 +101,36 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     fetch(`${host}/api/data/`)
       .then((res) => res.json())
       .then((value) => {
-        const data: LPSEProject[] = value?.result
-        axios
-          .post(`${host}/api/project`, data)
-          .then((res) => {
-            const data: Project[] = res.data.data
-            setUpdatedIndexes(data.map((project) => project.id))
-            if (data.length > 0) {
-              toast.success(`${data.length} new project`)
-            } else {
-              toast.success('No new project')
-            }
-          })
-          .catch((err) => toast.error(err))
+        if (value?.status) {
+          toast.success(`Still scrapping ...`)
+        } else {
+          const data: LPSEProject[] = value?.result
+          axios
+            .post(`${host}/api/project`, data)
+            .then((res) => {
+              const data: Project[] = res.data.data
+              setUpdatedIndexes(data.map((project) => project.id))
+              if (data.length > 0) {
+                toast.success(`${data.length} new project`)
+              } else {
+                toast.success('No new project')
+              }
+            })
+            .catch((err) => toast.error(err))
+        }
       })
       .catch((err) => toast.error(err))
       .finally(() => setFetchLPSELoading(false))
+  }
+  const hitScrapper = () => {
+    setHitScrapper(true)
+    fetch(`${host}/api/scrapper/`)
+      .then((res) => res.json())
+      .then((value) => {
+        toast.success(value?.status)
+      })
+      .catch((err) => toast.error(err))
+      .finally(() => setHitScrapper(false))
   }
 
   useEffect(() => {
@@ -148,21 +163,33 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
 
   return (
     <DashboardLayout>
-      <div>
-        <LoadingButton
-          loading={isFetchLPSELoading}
-          variant="outlined"
-          onClick={fetchLPSEProject}
-          loadingPosition="start"
-          startIcon={<Refresh />}>
-          Fetch LPSE Project
-        </LoadingButton>
+      <div className="flex gap-2">
+        <div>
+          <LoadingButton
+            loading={isFetchLPSELoading}
+            variant="outlined"
+            onClick={fetchLPSEProject}
+            loadingPosition="start"
+            startIcon={<Refresh />}>
+            Fetch LPSE Project
+          </LoadingButton>
+        </div>
+        <div>
+          <LoadingButton
+            loading={isHitScrapper}
+            variant="outlined"
+            onClick={hitScrapper}
+            loadingPosition="start"
+            startIcon={<Refresh />}>
+            Hit Trigger
+          </LoadingButton>
+        </div>
       </div>
       <div className="relative overflow-x-auto overflow-y-auto">
         <MaterialReactTable
           columns={columns}
           data={projectList}
-          enablePagination={false}
+          enablePagination={true}
           enableRowVirtualization
           state={{ isLoading }}
           initialState={{
