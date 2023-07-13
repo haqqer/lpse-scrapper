@@ -18,6 +18,7 @@ const httpAgent = new http.Agent({})
 const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         const projectList = await prisma.project.findMany({
+            take: Number(process.env.DEFAULT_LIMIT_PRISMA) || 100,
             orderBy: [
                 {
                     deadlineAt: 'asc',
