@@ -7,6 +7,14 @@ await import('./src/env.mjs')
 /** @type {import("next").NextConfig} */
 const config = {
     reactStrictMode: false,
+    async rewrites() {
+        return [
+            {
+                source: '/api/scrapper',
+                destination: 'https://haqqer.ignorelist.com/scrapper',
+            },
+        ]
+    },
     eslint: {
         ignoreDuringBuilds: true,
     },
