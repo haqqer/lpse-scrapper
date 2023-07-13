@@ -33,13 +33,6 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       {
         accessorKey: 'owner',
         header: 'Kementrian',
-        Cell: ({ cell }) => (
-          <Box>
-            <Link target="_blank" href={cell.row.getValue<string>('ownerUrl')}>
-              {cell.getValue<string>()}
-            </Link>
-          </Box>
-        ),
         filterSelectOptions: [
           ...new Set(
             projectList
@@ -139,14 +132,14 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       .get(`${host}/api/project`)
       .then(async (res: AxiosResponse) => {
         if (!res.data.error) {
-          const sourcesResponse = await axios.get(`${host}/api/sources`)
-          const sources = sourcesResponse.data.result as Array<Sources>
+          // const sourcesResponse = await axios.get(`${host}/api/sources`)
+          // const sources = sourcesResponse.data.result as Array<Sources>
 
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
             ({ owner, title, type, hps, deadlineAt, url }) => ({
               owner,
-              ownerUrl: sources.filter((s) => s.from === owner)[0]!.url,
+              ownerUrl: owner,
               title,
               url,
               type,
