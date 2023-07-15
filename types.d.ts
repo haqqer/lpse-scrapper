@@ -16,5 +16,4 @@ export type ListPageProps = {
 }
 export type ScrapperPageProps = {
     host: string
-    scrapeData: ScrapeResult[]
 }
