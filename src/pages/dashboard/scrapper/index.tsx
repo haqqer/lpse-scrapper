@@ -1,5 +1,3 @@
-import { Refresh } from '@mui/icons-material'
-import { LoadingButton } from '@mui/lab'
 import { type Project } from '@prisma/client'
 import axios, { type AxiosResponse } from 'axios'
 import dayjs from 'dayjs'
@@ -10,6 +8,7 @@ import { type LPSEProject, type ScrapperPageProps } from 'types'
 import DashboardLayout from '~/layouts/Dashboard'
 
 type ProjectItemView = {
+  id: string
   owner: string
   ownerUrl: string
   title: string
@@ -25,6 +24,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [isLoading, setLoading] = useState(true)
   const [isFetchLPSELoading, setFetchLPSELoading] = useState(false)
   const [isHitScrapper, setHitScrapper] = useState(false)
+  const [refresh, setRefresh] = useState(false)
 
   const [isAscend, setIsAscend] = useState(true)
   const [orderBy, setOrderBy] = useState("")
@@ -87,6 +87,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       .catch((err) => toast.error(err))
       .finally(() => setFetchLPSELoading(false))
   }
+
   const hitScrapper = () => {
     setHitScrapper(true)
     fetch(`${host}/api/scrapper/`)
@@ -96,6 +97,20 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       })
       .catch((err) => toast.error(err))
       .finally(() => setHitScrapper(false))
+  }
+
+  const deleteLPSEProject = (id: string) => {
+    setHitScrapper(true)
+    fetch(`${host}/api/project/${id}`, {
+      method: "DELETE"
+    })
+    .then((res) => res.json())
+    .then((value) => {
+      toast.success(value?.status)
+    })
+    .catch((err) => toast.error(err))
+    .finally(() => setHitScrapper(false))
+    setRefresh(true)
   }
 
   useEffect(() => {
@@ -110,7 +125,8 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         if (!res.data.error) {
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
-            ({ owner, title, type, hps, deadlineAt, url }) => ({
+            ({ id, owner, title, type, hps, deadlineAt, url }) => ({
+              id,
               owner,
               ownerUrl: String(url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/g)),
               title,
@@ -125,11 +141,13 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       })
       .catch((err) => toast.error(err))
       .finally(() => setLoading(false))
+    setRefresh(false)
   }, [
     updatedIndexes,
     search,
     orderBy,
-    isAscend
+    isAscend,
+    refresh
   ])
 
   return (
@@ -137,24 +155,16 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="flex gap-2">
           <div>
-            <LoadingButton
-              loading={isFetchLPSELoading}
-              variant="outlined"
-              onClick={fetchLPSEProject}
-              loadingPosition="start"
-              startIcon={<Refresh />}>
-              Fetch LPSE Project
-            </LoadingButton>
+            <button 
+              onClick={fetchLPSEProject} 
+              className="rounded-lg bg-orange-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-orange-800 focus:outline-none focus:ring-4 focus:ring-orange-300 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-800"
+            >Fetch LPSE Project</button>
           </div>
           <div>
-            <LoadingButton
-              loading={isHitScrapper}
-              variant="outlined"
-              onClick={hitScrapper}
-              loadingPosition="start"
-              startIcon={<Refresh />}>
-              Hit Trigger
-            </LoadingButton>
+            <button 
+              onClick={hitScrapper} 
+              className="rounded-lg bg-green-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+            >Hit Scrapper</button>
           </div>
         </div>
         <div className="flex gap-2 justify-end">
@@ -183,6 +193,9 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                   </a>
                 </th>
               ))}
+              <th className="px-6 py-3">
+                Delete
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -210,6 +223,13 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                     </a>
                   </td>
                   <td className="px-6 py-4">{value.ownerUrl}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => deleteLPSEProject(value.id)}
+                      className="w-full rounded-lg bg-red-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
+                      Delete
+                    </button>                    
+                  </td>
                 </tr>
               ))}
           </tbody>

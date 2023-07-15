@@ -47,7 +47,7 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.query?.search) {
         queryBuilder.where = {
             title: {
-                contains: String(req.query?.search).split(" ").join(" & "),
+                contains: String(req.query?.search),
                 mode: "insensitive"
             }
         }
