@@ -1,6 +1,4 @@
 import { Prisma } from '@prisma/client'
-import axios, { type AxiosResponse } from 'axios'
-import * as cheerio from 'cheerio'
 import dayjs from 'dayjs'
 import http from 'http'
 import https from 'https'
