@@ -219,16 +219,16 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             </tr>
           </thead>
           <tbody>
-            {projectList == undefined && (
+            {projectList.length == 0 && (
               <tr>
-                <td colSpan={7}>
+                <td colSpan={8}>
                   <div className="py-8 flex justify-center items-center">
                     <LoadingSpinner size={50} />
                   </div>               
                 </td>
               </tr>
             )}
-            {projectList != undefined &&
+            {projectList.length > 0 &&
               projectList.map((value, idx) => (
                 <tr
                   key={idx}
