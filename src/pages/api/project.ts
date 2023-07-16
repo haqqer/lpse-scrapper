@@ -1,17 +1,9 @@
 import { Prisma } from '@prisma/client'
 import dayjs from 'dayjs'
-import http from 'http'
-import https from 'https'
 import { type NextApiRequest, type NextApiResponse } from 'next'
 import { z } from 'zod'
 import { prisma } from '~/server/db'
 import '~/utils/bigint'
-
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: false,
-})
-
-const httpAgent = new http.Agent({})
 
 const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     let queryBuilder: Prisma.ProjectFindManyArgs = {

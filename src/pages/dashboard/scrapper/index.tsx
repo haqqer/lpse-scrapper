@@ -5,6 +5,7 @@ import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
+import { LoadingSpinner } from '~/components/Loading'
 import DashboardLayout from '~/layouts/Dashboard'
 
 type ProjectItemView = {
@@ -218,6 +219,15 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             </tr>
           </thead>
           <tbody>
+            {projectList == undefined && (
+              <tr>
+                <td colSpan={7}>
+                  <div className="py-8 flex justify-center items-center">
+                    <LoadingSpinner size={50} />
+                  </div>               
+                </td>
+              </tr>
+            )}
             {projectList != undefined &&
               projectList.map((value, idx) => (
                 <tr
