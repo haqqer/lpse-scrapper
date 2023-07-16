@@ -29,6 +29,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [isAscend, setIsAscend] = useState(true)
   const [orderBy, setOrderBy] = useState("")
   const [search, setSearch] = useState("")
+  const [limit, setLimit] = useState(25)
 
   const columns = [
     {
@@ -106,11 +107,14 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     })
     .then((res) => res.json())
     .then((value) => {
-      toast.success(value?.status)
+      const project = value.data as ProjectItemView
+      toast.success(`Successfully delete ${project.owner} - ${project.title}`)
     })
     .catch((err) => toast.error(err))
-    .finally(() => setHitScrapper(false))
-    setRefresh(true)
+    .finally(() => {
+      setHitScrapper(false)
+      setRefresh(true)
+    })
   }
 
   useEffect(() => {
@@ -120,7 +124,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       sort = "desc"
     }
     axios
-      .get(`${host}/api/project?orderBy=${orderBy}&sort=${sort}&search=${search}`)
+      .get(`${host}/api/project?limit=${limit}&orderBy=${orderBy}&sort=${sort}&search=${search}`)
       .then(async (res: AxiosResponse) => {
         if (!res.data.error) {
           const data: Project[] = res.data.data
@@ -140,19 +144,22 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         }
       })
       .catch((err) => toast.error(err))
-      .finally(() => setLoading(false))
-    setRefresh(false)
+      .finally(() => {
+        setLoading(false)
+        setRefresh(false)
+      })
   }, [
     updatedIndexes,
     search,
     orderBy,
     isAscend,
-    refresh
+    limit,
+    refresh,
   ])
 
   return (
     <DashboardLayout>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 my-2">
         <div className="flex gap-2">
           <div>
             <button 
@@ -168,14 +175,26 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
           </div>
         </div>
         <div className="flex gap-2 justify-end">
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 my-2">
+        <div className="flex gap-2">
+          <select onChange={(e) => setLimit(Number(e.target.value))} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value={25} defaultChecked>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={150}>150</option>
+          </select>            
+        </div>
+        <div className="flex gap-2 justify-end">
           <input onChange={(e) => {
             setTimeout(() => {
               setSearch(e.target.value)
             }, 1000)
-          }} type="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+          }} type="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
           <button 
             onClick={() => setSearch("")}
-            className="rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="rounded-lg bg-blue-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >Clear</button>
         </div>
       </div>
