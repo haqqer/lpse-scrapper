@@ -6,7 +6,7 @@ import { prisma } from '~/server/db'
 import '~/utils/bigint'
 
 const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
-    let queryBuilder: Prisma.ProjectFindManyArgs = {
+    let filterBuilder: Prisma.ProjectFindManyArgs = {
         take: 10,
         orderBy: {
             createdAt: "desc"
@@ -18,10 +18,10 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
         }
     }
     if (req.query?.limit) {
-        queryBuilder.take = Number(req.query?.limit) || 10
+        filterBuilder.take = Number(req.query?.limit) || 10
     }
     if (req.query?.offset) {
-        queryBuilder.skip = Number(req.query?.offset) || 0
+        filterBuilder.skip = Number(req.query?.offset) || 0
     }
     if (req.query?.orderBy) {
         console.log(req.query?.orderBy)
@@ -30,12 +30,12 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
         if (req.query?.sort == "desc") {
             sort = "desc"
         }
-        queryBuilder.orderBy = {
+        filterBuilder.orderBy = {
             [orderBy]: sort
         }
     }
     if (req.query?.search) {
-        queryBuilder.where = {
+        filterBuilder.where = {
             title: {
                 contains: String(req.query?.search),
                 mode: "insensitive"
@@ -44,7 +44,8 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     try {
-        const projectList = await prisma.project.findMany(queryBuilder)
+        // const count = await prisma.project.count()
+        const projectList = await prisma.project.findMany(filterBuilder)
         res.status(200).json({
             error: false,
             data: projectList,
