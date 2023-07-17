@@ -5,7 +5,6 @@ import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
-import { ArrowSort } from '~/components/ArrowSort'
 import { LoadingSpinner } from '~/components/Loading'
 import DashboardLayout from '~/layouts/Dashboard'
 
