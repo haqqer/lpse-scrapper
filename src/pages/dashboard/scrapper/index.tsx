@@ -5,6 +5,7 @@ import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
+import { ArrowSort } from '~/components/ArrowSort'
 import { LoadingSpinner } from '~/components/Loading'
 import DashboardLayout from '~/layouts/Dashboard'
 
@@ -31,6 +32,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [orderBy, setOrderBy] = useState("")
   const [search, setSearch] = useState("")
   const [limit, setLimit] = useState(25)
+  const [offset, setOffset] = useState(0)
 
   const columns = [
     {
@@ -101,6 +103,15 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       .finally(() => setHitScrapper(false))
   }
 
+  const navPage = (forward: boolean) => {
+    if (forward) {
+      setOffset(offset + limit)
+    } 
+    if (!forward && offset > 0) {
+      setOffset(offset - limit)
+    }
+  }
+
   const deleteLPSEProject = (id: string) => {
     setHitScrapper(true)
     fetch(`${host}/api/project/${id}`, {
@@ -120,12 +131,18 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
 
   useEffect(() => {
     setLoading(true)
+    if (updatedIndexes.length > 0) {
+      setSearch("")
+      setOrderBy("")
+      setIsAscend(false)
+      setLimit(25)
+    }
     let sort = "asc"
     if (!isAscend) {
       sort = "desc"
     }
     axios
-      .get(`${host}/api/project?limit=${limit}&orderBy=${orderBy}&sort=${sort}&search=${search}`)
+      .get(`${host}/api/project?limit=${limit}&offset=${offset}&orderBy=${orderBy}&sort=${sort}&search=${search}`)
       .then(async (res: AxiosResponse) => {
         if (!res.data.error) {
           const data: Project[] = res.data.data
@@ -155,6 +172,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     orderBy,
     isAscend,
     limit,
+    offset,
     refresh,
   ])
 
@@ -185,7 +203,21 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             <option value={50}>50</option>
             <option value={100}>100</option>
             <option value={150}>150</option>
-          </select>            
+          </select>
+          <div className="grid grid-cols-2 gap-4">
+            <button onClick={() => navPage(false)} className="flex gap-2 items-center justify-between bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <svg className="w-[16px] h-[16px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 8 14">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 1 1.3 6.326a.91.91 0 0 0 0 1.348L7 13" />
+              </svg>
+              <span>Prev</span>
+            </button>
+            <button onClick={() => navPage(true)} className="flex gap-2 items-center justify-between bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <span>Next</span>
+              <svg className="w-[16px] h-[16px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 8 14">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m1 13 5.7-5.326a.909.909 0 0 0 0-1.348L1 1" />
+              </svg>
+            </button>
+          </div>
         </div>
         <div className="flex gap-2 justify-end">
           <input onChange={(e) => {
@@ -219,7 +251,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             </tr>
           </thead>
           <tbody>
-            {projectList.length == 0 && (
+            {isLoading && (
               <tr>
                 <td colSpan={8}>
                   <div className="py-8 flex justify-center items-center">
@@ -234,12 +266,12 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                   key={idx}
                   className="border-b bg-white dark:border-gray-700 dark:bg-gray-800">
                   <td className="px-6 py-4">
-                    <a href={value.ownerUrl} target='_blank'>
+                    <a href={value.ownerUrl} target='_blank' className="hover:underline">
                       {value.owner}
                     </a>
                   </td>
                   <td className="px-6 py-4">
-                  <a href={value.url} target='_blank'>
+                  <a href={value.url} target='_blank' className="hover:underline">
                       {value.title}
                     </a>
                   </td>
@@ -247,7 +279,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                   <td className="px-6 py-4">{`Rp ${value.hps.toLocaleString('id-ID')}`}</td>
                   <td className="px-6 py-4">{value.deadlineAt}</td>
                   <td className="px-6 py-4">
-                    <a href={value.url} target='_blank'>
+                    <a href={value.url} target='_blank' className="hover:underline">
                       {value.url}
                     </a>
                   </td>
