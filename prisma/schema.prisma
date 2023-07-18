@@ -69,6 +69,7 @@ model Project {
     title      String
     type       String
     hps        BigInt
+    isExpired  Boolean  @default(false)
     deadlineAt DateTime
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
