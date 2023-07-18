@@ -1,12 +1,21 @@
 import { type Project } from '@prisma/client'
 import axios, { type AxiosResponse } from 'axios'
 import dayjs from 'dayjs'
+import 'dayjs/locale/id'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 import { type NextPage, type GetServerSideProps } from 'next'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
 import { LoadingSpinner } from '~/components/Loading'
 import DashboardLayout from '~/layouts/Dashboard'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+dayjs.tz.setDefault("Asia/Jakarta")
+// console.log(dayjs.tz('2023-07-27T12:00:00.000Z', 'Asia/Jakarta').format('DD MMMM YYYY hh:mm'))
 
 type ProjectItemView = {
   id: string
@@ -17,6 +26,7 @@ type ProjectItemView = {
   type: string
   hps: number
   deadlineAt: string
+  createdAt: string
 }
 
 const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
@@ -61,6 +71,10 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
     {
       key: "ownerUrl",
       header: "Owner URL"
+    },
+    {
+      key: "createdAt",
+      header: "Tanggal Masuk"
     },
   ]
 
@@ -146,7 +160,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         if (!res.data.error) {
           const data: Project[] = res.data.data
           const list = data.map<ProjectItemView>(
-            ({ id, owner, title, type, hps, deadlineAt, url }) => ({
+            ({ id, owner, title, type, hps, deadlineAt, url, createdAt }) => ({
               id,
               owner,
               ownerUrl: String(url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/g)),
@@ -154,7 +168,8 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
               url,
               type,
               hps: Number(hps),
-              deadlineAt: dayjs(deadlineAt).format('DD MMMM YYYY'),
+              deadlineAt: dayjs.tz(deadlineAt).format('DD MMMM YYYY hh:mm'),
+              createdAt: dayjs.tz(createdAt).format('DD MMMM YYYY hh:mm'),
             })
           )
           setProjectList(list)
@@ -283,6 +298,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                     </a>
                   </td>
                   <td className="px-6 py-4">{value.ownerUrl}</td>
+                  <td className="px-6 py-4">{value.createdAt}</td>
                   <td className="px-6 py-4">
                     <button
                       onClick={() => deleteLPSEProject(value.id)}

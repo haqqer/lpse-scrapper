@@ -15,6 +15,7 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
             deadlineAt: {
                 gte: dayjs(Date.now()).startOf('day').toISOString(),
             },
+            isExpired: false
         }
     }
     if (req.query?.limit) {
@@ -35,11 +36,9 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
         }
     }
     if (req.query?.search) {
-        filterBuilder.where = {
-            title: {
+        filterBuilder.where!.title =  {
                 contains: String(req.query?.search),
                 mode: "insensitive"
-            }
         }
     }
 

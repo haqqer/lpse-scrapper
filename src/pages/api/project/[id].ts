@@ -12,9 +12,12 @@ const deleteProjectByID = async (
     })
     try {
         const { id: projectID} = await dataSchema.parse(req.query)
-        const result = await prisma.project.delete({
+        const result = await prisma.project.update({
             where: {
                 id: projectID
+            },
+            data: {
+                isExpired: true
             }
         })
         res.status(200).json({
