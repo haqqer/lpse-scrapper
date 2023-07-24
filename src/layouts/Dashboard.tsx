@@ -47,7 +47,7 @@ const DashboardLayout = ({ children }: PropsWithChildren) => {
                                 className="mr-4 flex items-center justify-between"
                             >
                                 <img
-                                    src="https://flowbite.s3.amazonaws.com/logo.svg"
+                                    src="https://api.typedream.com/v0/document/public/2DC4iNvMIimZwmR6WbUjStfaCIJ_Logo_Azura_White_No_BG.png?bucket=document"
                                     className="mr-3 h-8"
                                     alt="Flowbite Logo"
                                 />

@@ -1,35 +1,50 @@
-import { PrismaPromise } from '@prisma/client'
-import axios, { type AxiosResponse } from 'axios'
-import * as cheerio from 'cheerio'
+import { Prisma } from '@prisma/client'
 import dayjs from 'dayjs'
-import http from 'http'
-import https from 'https'
 import { type NextApiRequest, type NextApiResponse } from 'next'
 import { z } from 'zod'
 import { prisma } from '~/server/db'
 import '~/utils/bigint'
 
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: false,
-})
-
-const httpAgent = new http.Agent({})
-
 const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-        const projectList = await prisma.project.findMany({
-            take: Number(process.env.DEFAULT_LIMIT_PRISMA) || 100,
-            orderBy: [
-                {
-                    deadlineAt: 'asc',
-                },
-            ],
-            where: {
-                deadlineAt: {
-                    gte: dayjs(Date.now()).startOf('day').toISOString(),
-                },
+    let filterBuilder: Prisma.ProjectFindManyArgs = {
+        take: 10,
+        orderBy: {
+            createdAt: "desc"
+        },
+        where: {
+            deadlineAt: {
+                gte: dayjs(Date.now()).startOf('day').toISOString(),
             },
-        })
+            isExpired: false
+        }
+    }
+    if (req.query?.limit) {
+        filterBuilder.take = Number(req.query?.limit) || 10
+    }
+    if (req.query?.offset) {
+        filterBuilder.skip = Number(req.query?.offset) || 0
+    }
+    if (req.query?.orderBy) {
+        console.log(req.query?.orderBy)
+        const orderBy: string = String(req.query?.orderBy) || "createdAt"
+        let sort = "asc"
+        if (req.query?.sort == "desc") {
+            sort = "desc"
+        }
+        filterBuilder.orderBy = {
+            [orderBy]: sort
+        }
+    }
+    if (req.query?.search) {
+        filterBuilder.where!.title =  {
+                contains: String(req.query?.search),
+                mode: "insensitive"
+        }
+    }
+
+    try {
+        // const count = await prisma.project.count()
+        const projectList = await prisma.project.findMany(filterBuilder)
         res.status(200).json({
             error: false,
             data: projectList,
