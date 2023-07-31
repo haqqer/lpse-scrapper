@@ -8,11 +8,11 @@ const config = {
     bracketSameLine: true,
     overrides: [
         {
-            files: "*.tsx",
+            files: '*.tsx',
             options: {
-                tabWidth: 2
-            }
-        }
+                tabWidth: 2,
+            },
+        },
     ],
 }
 

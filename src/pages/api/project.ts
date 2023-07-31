@@ -1,22 +1,24 @@
 import { Prisma } from '@prisma/client'
 import dayjs from 'dayjs'
+import id from 'dayjs/locale/id'
 import { type NextApiRequest, type NextApiResponse } from 'next'
 import { z } from 'zod'
 import { prisma } from '~/server/db'
 import '~/utils/bigint'
 
+dayjs.locale(id)
 const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     let filterBuilder: Prisma.ProjectFindManyArgs = {
         take: 10,
         orderBy: {
-            createdAt: "desc"
+            createdAt: 'desc',
         },
         where: {
             deadlineAt: {
                 gte: dayjs(Date.now()).startOf('day').toISOString(),
             },
-            isExpired: false
-        }
+            isHidden: false,
+        },
     }
     if (req.query?.limit) {
         filterBuilder.take = Number(req.query?.limit) || 10
@@ -26,19 +28,19 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     if (req.query?.orderBy) {
         console.log(req.query?.orderBy)
-        const orderBy: string = String(req.query?.orderBy) || "createdAt"
-        let sort = "asc"
-        if (req.query?.sort == "desc") {
-            sort = "desc"
+        const orderBy: string = String(req.query?.orderBy) || 'createdAt'
+        let sort = 'asc'
+        if (req.query?.sort == 'desc') {
+            sort = 'desc'
         }
         filterBuilder.orderBy = {
-            [orderBy]: sort
+            [orderBy]: sort,
         }
     }
     if (req.query?.search) {
-        filterBuilder.where!.title =  {
-                contains: String(req.query?.search),
-                mode: "insensitive"
+        filterBuilder.where!.title = {
+            contains: String(req.query?.search),
+            mode: 'insensitive',
         }
     }
 
