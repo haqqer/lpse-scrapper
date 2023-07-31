@@ -3,27 +3,24 @@ import { z } from 'zod'
 import { prisma } from '~/server/db'
 import '~/utils/bigint'
 
-const deleteProjectByID = async (
-    req: NextApiRequest,
-    res: NextApiResponse
-) => {
-    const dataSchema =  z.object({
+const deleteProjectByID = async (req: NextApiRequest, res: NextApiResponse) => {
+    const dataSchema = z.object({
         id: z.string().nonempty(),
     })
     try {
-        const { id: projectID} = await dataSchema.parse(req.query)
+        const { id: projectID } = await dataSchema.parse(req.query)
         const result = await prisma.project.update({
             where: {
-                id: projectID
+                id: projectID,
             },
             data: {
-                isExpired: true
-            }
+                isHidden: true,
+            },
         })
         res.status(200).json({
             error: false,
             data: result,
-            detail: 'Data Successfully deleted'
+            detail: 'Data Successfully deleted',
         })
     } catch (err) {
         if (err instanceof z.ZodError) {
@@ -38,7 +35,7 @@ const deleteProjectByID = async (
                 error: true,
                 message: err.message,
             })
-        }        
+        }
     }
     res.json({})
 }
