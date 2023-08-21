@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast'
 import { type LPSEProject, type ScrapperPageProps } from 'types'
 import { LoadingSpinner } from '~/components/Loading'
 import DashboardLayout from '~/layouts/Dashboard'
+import * as XLSX from 'xlsx'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -141,6 +142,14 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       })
   }
 
+  const exportToExcel = () => {
+    const table = document.getElementById("projectTable");
+    const wb = XLSX.utils.table_to_book(table);
+
+    /* Export to file (start a download) */
+    XLSX.writeFile(wb, `data-${Date.now()}.xlsx`);
+  }
+
   useEffect(() => {
     setLoading(true)
     if (updatedIndexes.length > 0) {
@@ -219,8 +228,9 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             <option value={50}>50</option>
             <option value={100}>100</option>
             <option value={150}>150</option>
+            <option value={99999}>All</option>
           </select>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <button
               onClick={() => navPage(false)}
               className="flex items-center justify-between gap-2 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
@@ -259,6 +269,14 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                 />
               </svg>
             </button>
+            <button
+              onClick={() => exportToExcel()}
+              className="flex items-center justify-between gap-2 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
+              <span>Export</span>
+              <svg className="w-[16px] h-[16px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 6V2a.97.97 0 0 0-.933-1H5.828a2 2 0 0 0-1.414.586L1.586 4.414A2 2 0 0 0 1 5.828V18a.969.969 0 0 0 .933 1H14a1 1 0 0 0 1-1M6 1v4a1 1 0 0 1-1 1H1m6 6h9m-1.939-2.768L16.828 12l-2.767 2.768" />
+              </svg>
+            </button>
           </div>
         </div>
         <div className="flex justify-end gap-2">
@@ -279,7 +297,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         </div>
       </div>
       <div className="relative my-4 overflow-x-auto overflow-y-auto">
-        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+        <table id="projectTable" className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
           <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               {columns.map((value, idx) => (
