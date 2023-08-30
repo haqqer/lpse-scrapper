@@ -33,6 +33,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
   const [projectList, setProjectList] = useState<ProjectItemView[]>([])
   const [updatedIndexes, setUpdatedIndexes] = useState<string[]>([])
   const [isLoading, setLoading] = useState(true)
+  const [ignoreDeadline, setIgnoreDeadline] = useState(false)
   const [isFetchLPSELoading, setFetchLPSELoading] = useState(false)
   const [isHitScrapper, setHitScrapper] = useState(false)
   const [refresh, setRefresh] = useState(false)
@@ -159,12 +160,16 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
       setLimit(25)
     }
     let sort = 'asc'
+    let deadlineSet = 'false' 
     if (!isAscend) {
       sort = 'desc'
     }
+    if (ignoreDeadline) {
+      deadlineSet = 'true'
+    }
     axios
       .get(
-        `${host}/api/project?limit=${limit}&offset=${offset}&orderBy=${orderBy}&sort=${sort}&search=${search}`
+        `${host}/api/project?limit=${limit}&offset=${offset}&orderBy=${orderBy}&sort=${sort}&search=${search}&ignoreDeadline=${deadlineSet}`
       )
       .then(async (res: AxiosResponse) => {
         if (!res.data.error) {
@@ -182,8 +187,8 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
               url,
               type,
               hps: Number(hps),
-              deadlineAt: dayjs.tz(deadlineAt).format('DD MMMM YYYY hh:mm'),
-              createdAt: dayjs.tz(createdAt).format('DD MMMM YYYY hh:mm'),
+              deadlineAt: dayjs(deadlineAt).format('DD MMMM YYYY hh:mm A'),
+              createdAt: dayjs(createdAt).format('DD MMMM YYYY hh:mm A'),
             })
           )
           setProjectList(list)
@@ -194,7 +199,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
         setLoading(false)
         setRefresh(false)
       })
-  }, [updatedIndexes, search, orderBy, isAscend, limit, offset, refresh])
+  }, [updatedIndexes, search, orderBy, isAscend, ignoreDeadline, limit, offset, refresh])
 
   return (
     <DashboardLayout>
@@ -230,10 +235,10 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             <option value={150}>150</option>
             <option value={99999}>All</option>
           </select>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="flex gap-2">
             <button
               onClick={() => navPage(false)}
-              className="flex items-center justify-between gap-2 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
+              className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
               <svg
                 className="h-[16px] w-[16px] text-gray-800 dark:text-white"
                 aria-hidden="true"
@@ -252,7 +257,7 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
             </button>
             <button
               onClick={() => navPage(true)}
-              className="flex items-center justify-between gap-2 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
+              className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
               <span>Next</span>
               <svg
                 className="h-[16px] w-[16px] text-gray-800 dark:text-white"
@@ -268,14 +273,25 @@ const Scrapper: NextPage<ScrapperPageProps> = ({ host }) => {
                   d="m1 13 5.7-5.326a.909.909 0 0 0 0-1.348L1 1"
                 />
               </svg>
-            </button>
+            </button>          
             <button
               onClick={() => exportToExcel()}
-              className="flex items-center justify-between gap-2 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
+              className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
               <span>Export</span>
               <svg className="w-[16px] h-[16px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 6V2a.97.97 0 0 0-.933-1H5.828a2 2 0 0 0-1.414.586L1.586 4.414A2 2 0 0 0 1 5.828V18a.969.969 0 0 0 .933 1H14a1 1 0 0 0 1-1M6 1v4a1 1 0 0 1-1 1H1m6 6h9m-1.939-2.768L16.828 12l-2.767 2.768" />
               </svg>
+            </button>
+            <button
+              onClick={() => setIgnoreDeadline(!ignoreDeadline)}
+              className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
+              {ignoreDeadline ? (
+                <span>All Deadline</span>
+              ) : (
+                <span>Current Deadline</span>
+              )
+
+              }
             </button>
           </div>
         </div>

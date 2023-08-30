@@ -81,7 +81,7 @@ const DashboardLayout = ({ children }: PropsWithChildren) => {
                 </nav>
                 {/* Sidebar */}
                 <aside
-                    className="fixed left-0 top-0 z-40 h-screen w-64 -translate-x-full border-r border-gray-200 bg-white pt-14 transition-transform dark:border-gray-700 dark:bg-gray-800 md:translate-x-0"
+                    className="fixed left-0 top-0 z-40 h-screen w-56 -translate-x-full border-r border-gray-200 bg-white pt-14 transition-transform dark:border-gray-700 dark:bg-gray-800 md:translate-x-0"
                     aria-label="Sidenav"
                     id="drawer-navigation"
                 >
@@ -189,7 +189,7 @@ const DashboardLayout = ({ children }: PropsWithChildren) => {
                         </ul>
                     </div>
                 </aside>
-                <main className="flex h-screen flex-col p-4 pt-20 md:ml-64">
+                <main className="flex h-screen flex-col p-4 pt-20 md:ml-56">
                     {children}
                 </main>
             </div>

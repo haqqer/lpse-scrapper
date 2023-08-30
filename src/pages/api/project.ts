@@ -44,6 +44,10 @@ const getProjectList = async (req: NextApiRequest, res: NextApiResponse) => {
         }
     }
 
+    if (req.query.ignoreDeadline == 'true') {
+        delete filterBuilder.where?.deadlineAt
+    }
+
     try {
         // const count = await prisma.project.count()
         const projectList = await prisma.project.findMany(filterBuilder)
