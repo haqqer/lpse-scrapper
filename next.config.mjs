@@ -11,7 +11,7 @@ const config = {
         return [
             {
                 source: '/api/scrapper',
-                destination: 'https://haqqer.ignorelist.com/scrapper',
+                destination: 'https://scraper-lpse-api.haqqer.net/scrapper',
             },
         ]
     },
